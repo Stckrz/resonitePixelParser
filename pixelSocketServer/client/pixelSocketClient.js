@@ -29,9 +29,23 @@ ws.on('open', () => {
 			b += pixelDataArray[i][2]
 		}
 		const redAvg = ((r / pixelDataArray.length) / 255).toFixed(1)
-		const blueAvg = ((r / pixelDataArray.length) / 255).toFixed(1)
-		const greenAvg = ((r / pixelDataArray.length) / 255).toFixed(1)
+		const blueAvg = ((g / pixelDataArray.length) / 255).toFixed(1)
+		const greenAvg = ((b / pixelDataArray.length) / 255).toFixed(1)
 		return [redAvg, blueAvg, greenAvg]
+	}
+
+	//takes an array of rgb values, and for each value, divides by 255.toFixed...
+	const resonitePrep = (pixelRgbArray) => {
+		const newArray = []
+		for(let i = 0; i < pixelRgbArray.length; i++){
+			let r = (pixelRgbArray[i][0] / 255).toFixed(1)
+			let g = (pixelRgbArray[i][1] / 255).toFixed(1)
+			let b = (pixelRgbArray[i][2] / 255).toFixed(1)
+			newArray.push(r)
+			newArray.push(g)
+			newArray.push(b)
+		}
+		return newArray
 	}
 
 	const resoniteFormat = (someArray) => {
@@ -40,7 +54,9 @@ ws.on('open', () => {
 		const newArray = [];
 		for (let i = 0; i < someArray.length; i++) {
 			// newArray.push(`p${1}[${someArray[0]}]`)
-			newArray.push(`p${i}[${someArray[i]},1.0]`)
+			const colorString = `p${i}[${someArray[i]};1.0]`
+			const sendColorString = colorString.replace(/,/g, ';')
+			newArray.push(sendColorString)
 		}
 		return newArray
 
@@ -74,16 +90,33 @@ ws.on('open', () => {
 
 			//returns a 3d array where each array is all of the values for a new 'pixel size'
 			const newPixelMap = parseRgbArray(parsedRgbArray, pixelSize)
+			console.log('newpixelmap', newPixelMap)
 
 			const shitArray = []
+			// for (let i = 0; i < newPixelMap.length; i++) {
+			// 	shitArray.push(pixelAverageArrayHandler(newPixelMap[i]))
+			// }
 			for (let i = 0; i < newPixelMap.length; i++) {
-				shitArray.push(pixelAverageArrayHandler(newPixelMap[i]))
+				shitArray.push(newPixelMap[i][0])
 			}
+			console.log('shitArrai',shitArray)
 			// console.log(shitArray)
-			const finalArray = resoniteFormat(shitArray)
-			for(let i = 0; i < finalArray.length; i++){
-				ws.send(finalArray[i])
+			// const finalArray = resoniteFormat(shitArray)
+			const preppedArray = resonitePrep(shitArray)
+			const finalArray = resoniteFormat(preppedArray)
+
+
+			function sendNextItem(index = 0){
+				if (index >= finalArray.length) return;
+				ws.send(finalArray[index]);
+				setTimeout(()=>{
+					sendNextItem(index + 1)
+				}, 20)
 			}
+			sendNextItem();
+			// for(let i = 0; i < finalArray.length; i++){
+			// 	ws.send(finalArray[i]);
+			// }
 
 
 
@@ -94,7 +127,7 @@ ws.on('open', () => {
 		}
 	}
 
-	const finalArray = getImageData('./crapshoot.png')
+	const finalArray = getImageData('./pika.png')
 
 
 });
