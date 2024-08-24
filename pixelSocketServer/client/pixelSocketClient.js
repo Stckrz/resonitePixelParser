@@ -1,6 +1,7 @@
 const WebSocket = require('ws');
 const sharp = require('sharp');
 const { parseRgbArray, resonitePrep, resoniteFormat } = require('./arrayFunctions')
+const fs =require('fs')
 
 const getImageData = async (imagePath) => {
 	try {
@@ -41,19 +42,6 @@ const getImageData = async (imagePath) => {
 		const finalArray = resoniteFormat(preppedArray)
 		return finalArray;
 
-		// function sendNextItem(index = 0) {
-		// 	if (index >= finalArray.length) return;
-		// 	ws.send(finalArray[index]);
-		// 	setTimeout(() => {
-		// 		sendNextItem(index + 1)
-		// 	}, 50)
-		// }
-		// sendNextItem();
-
-
-		// for(let i = 0; i < finalArray.length; i++){
-		// 	ws.send(finalArray[i]);
-		// }
 	} catch (error) {
 		console.log("error", error)
 		
@@ -62,10 +50,12 @@ const getImageData = async (imagePath) => {
 const ws = new WebSocket('ws://localhost:8080/');
 let ass = []
 let assIndex = 0 
+let fileIndex = 0 
 
 ws.on('open', async() => {
-	ass = await getImageData('./pika.png')
+	ass = await getImageData('./rusty.jpg')
 	assIndex = 0
+	fileIndex = 0
 	console.log("Websocket connection open");
 
 
@@ -74,13 +64,24 @@ ws.on('open', async() => {
 ws.on('message', (message) => {
 	console.log(message.toString());
 	if (message.toString() === "print") {
-		getImageData('./pika.png')
+		getImageData('./zd.jpg')
 	}
 	if(message.toString() === 'next'){
 		if(assIndex < ass.length){
 			ws.send(ass[assIndex]);
 			assIndex += 1;
 		}
+	}
+	if(message.toString() === 'ls'){
+
+		const fileArray = fs.readdirSync('./')
+		if(assIndex < ass.length){
+			ws.send(fileArray[fileIndex]);
+			fileIndex += 1;
+		}
+		// for(let i = 0;i<fileArray.length; i++){
+		// 	ws.send(fileArray[i])
+		// }
 	}
 });
 
