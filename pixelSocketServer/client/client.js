@@ -4,7 +4,7 @@ const ws = new WebSocket('ws://localhost:8080/');
 
 ws.on('open', () => {
 	console.log("Websocket connection open");
-	ws.send('hello server!')
+	ws.send('next')
 });
 
 ws.on('message', (message) => {
