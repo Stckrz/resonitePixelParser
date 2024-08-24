@@ -2,16 +2,12 @@ const WebSocket = require('ws');
 const sharp = require('sharp');
 const {parseRgbArray, resonitePrep, resoniteFormat} = require('./arrayFunctions')
 
-const ws = new WebSocket('ws://localhost:8080/');
-ws.on('open', () => {
-	console.log("Websocket connection open");
-
 	const getImageData = async (imagePath) => {
 		try {
 			const image = sharp(imagePath);
 			const thumbImage = image.resize({
-				width: 16,
-				height: 16
+				width: 32,
+				height: 32
 			})
 			const metadata = await thumbImage.metadata();
 
@@ -29,7 +25,7 @@ ws.on('open', () => {
 			console.log("width", info.width)
 
 			//We want a 16X16 grid, so we need to divide the number of pixels by 256, so we can see how many pixels in the old image, will be in the new image
-			const pixelSize = parseInt(pixels / 256);
+			const pixelSize = parseInt(pixels / 1024);
 			// console.log("pixels", pixels)
 			// console.log("pixelsize", pixelSize)
 
@@ -49,10 +45,11 @@ ws.on('open', () => {
 				ws.send(finalArray[index]);
 				setTimeout(()=>{
 					sendNextItem(index + 1)
-				}, 20)
+				}, 50)
 			}
 			sendNextItem();
 
+	getImageData('./pika.png')
 
 			// for(let i = 0; i < finalArray.length; i++){
 			// 	ws.send(finalArray[i]);
@@ -61,8 +58,11 @@ ws.on('open', () => {
 			console.log("error", error)
 		}
 	}
+const ws = new WebSocket('ws://localhost:8080/');
+ws.on('open', () => {
+	console.log("Websocket connection open");
 
-	getImageData('./pika.png')
+
 });
 
 ws.on('message', (message) => {

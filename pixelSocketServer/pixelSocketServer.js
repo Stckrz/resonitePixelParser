@@ -4,15 +4,14 @@ const wss = new WebSocket.Server({ port: 8080 });
 
 wss.on('connection', (client) => {
 	console.log('New Client Connected');
-	client.send('Hello, New Client!!');
+	//client.send('Hello, New Client!!');
 
 	client.on('message', (message) => {
 		console.log('received: %s', message)
 
 		const textMessage = message.toString();
-
 		wss.clients.forEach((client) => {
-			if (client.readyState === WebSocket.OPEN) {
+			if (client !== client && client.readyState === WebSocket.OPEN) {
 				client.send(textMessage);
 			}
 		})
