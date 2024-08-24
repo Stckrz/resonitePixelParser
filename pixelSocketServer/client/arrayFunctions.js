@@ -1,3 +1,4 @@
+const sharp = require('sharp');
 //takes an array and a number, and returns a 2d array where each array.length is the number.
 const parseRgbArray = (dataArray, sliceNumber) => {
 	const newArray = []
@@ -35,14 +36,49 @@ function resoniteFormat(someArray){
 	return newArray
 }
 
-// function create2dArray(pixelArray, pixels, width){
-// 	const rows = pixels / width;
-// 	const newArray = []
-// 	for(let i = 0; i > rows; i++){
-// 		const rowArray = []
-// 		for()
-// 	}
-// 	
-// }
+const getImageData = async (imagePath) => {
+	try {
+		const image = sharp(imagePath);
+		const thumbImage = image.resize({
+			width: 32,
+			height: 32
+		})
+		const metadata = await thumbImage.metadata();
 
-module.exports = {resoniteFormat, resonitePrep, parseRgbArray}
+		// determines whether the image data is in RGB or RGBA format
+		const channels = metadata.channels;
+		console.log(channels === 3 ? "rgb" : "rgba");
+
+		//creates 2 arrays, one is an array of pixel color values, the other is an array of info about the image.
+		//it is raw(), because we do not want any encoding, and it toBuffer({resolveWithObject: true}) converts image data into raw buffer for us.
+		const { data, info } = await thumbImage.raw().toBuffer({ resolveWithObject: true });
+
+		//divides the number of items in the data array by the number of channels, telling us how many pixels we have
+		const pixels = data.length / channels;
+		// console.log('pixels', pixels);
+		console.log("width", info.width)
+
+		//We want a 16X16 grid, so we need to divide the number of pixels by 256, so we can see how many pixels in the old image, will be in the new image
+		const pixelSize = parseInt(pixels / 1024);
+		// console.log("pixels", pixels)
+		// console.log("pixelsize", pixelSize)
+
+		//returns a 2d array where each array is the rgb data for each pixel
+		const parsedRgbArray = parseRgbArray(data, channels)
+
+		const shitArray = []
+		for (let i = 0; i < parsedRgbArray.length; i += pixelSize) {
+			shitArray.push(parsedRgbArray[i])
+		}
+		const preppedArray = resonitePrep(shitArray)
+
+		const finalArray = resoniteFormat(preppedArray)
+		return finalArray;
+
+	} catch (error) {
+		console.log("error", error)
+		
+	}
+}
+
+module.exports = {resoniteFormat, resonitePrep, parseRgbArray, getImageData}
