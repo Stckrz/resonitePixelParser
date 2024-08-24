@@ -34,4 +34,15 @@ function resoniteFormat(someArray){
 	}
 	return newArray
 }
+
+// function create2dArray(pixelArray, pixels, width){
+// 	const rows = pixels / width;
+// 	const newArray = []
+// 	for(let i = 0; i > rows; i++){
+// 		const rowArray = []
+// 		for()
+// 	}
+// 	
+// }
+
 module.exports = {resoniteFormat, resonitePrep, parseRgbArray}
